@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midterm</title>
+    <link rel="stylesheet" href="MIdterm2.css">
+</head>
+<body>
+    <h1>Midterm</h1>
+    <div class="game-board" id="board"></div>
+    <p id="status"></p>
+    <button id="reset">Reset Game</button>
+
+    <script>
+        const board = document.getElementById('board'); // Поле
+        const statusDisplay = document.getElementById('status'); // Ход
+        const resetButton = document.getElementById('reset'); // Ресет
+        // Начальные значения
+        let currentPlayer = 'X'; // Текущий игрок
+        let gameActive = true;   // Активность игры
+        let gameState = ["", "", "", "", "", "", "", "", ""]; // Состояние игрового поля
+        // Индексы клеток
+        const winningConditions = [
+            [0, 1, 2], 
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6], 
+            [1, 4, 7], 
+            [2, 5, 8], 
+            [0, 4, 8], 
+            [2, 4, 6]
+        ];
+        // Обработчик клика на клетку
+        function handleCellClick(event) {
+            const clickedCell = event.target; // Получаем кликнутый элемент
+            const clickedCellIndex = Array.from(board.children).indexOf(clickedCell); // Получаем индекс клетки
+            // Проверяем, занята ли клетка или игра завершена
+            if (gameState[clickedCellIndex] !== "" || !gameActive) {
+                return;
+            }
+            // Обновляем состояние игры
+            gameState[clickedCellIndex] = currentPlayer;
+            clickedCell.textContent = currentPlayer; // Символ игрока ставиться на выбранную ячейку
+            clickedCell.classList.add('taken'); // Клетка занята
+            checkResult(); // Проверка результата
+        }
+        function checkResult() {
+            let roundWon = false;
+            // Проверяем все условия победы
+            for (let condition of winningConditions) {
+                const [a, b, c] = condition; // Получаем индексы клеток
+                if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                    roundWon = true; // Победа
+                    break;
+                }
+            }
+            if (roundWon) {
+                statusDisplay.textContent = `Игрок "${currentPlayer}" выиграл!`; // Сообщаем о победе
+                gameActive = false; // Останавливаем игру
+                return;
+            }
+            // Проверка на ничью
+            if (!gameState.includes("")) {
+                statusDisplay.textContent = "Ничья";
+                gameActive = false;
+                return;
+            }
+            // Смена игрока
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusDisplay.textContent = `Ход игрока "${currentPlayer}"`;
+        }
+        // Сброс игры к начальному состоянию
+        function resetGame() {
+            currentPlayer = 'X';
+            gameActive = true;
+            gameState = ["", "", "", "", "", "", "", "", ""]; 
+            statusDisplay.textContent = `Начинает игрок "${currentPlayer}"`;
+            // Очищаем каждую клетку
+            Array.from(board.children).forEach(cell => {
+                cell.textContent = "";
+                cell.classList.remove('taken');
+            });
+        }
+        // Создание игрового поля
+        function createBoard() {
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div'); // Создаем клетку
+                cell.classList.add('cell'); // Добавляем класс для стилей
+                cell.addEventListener('click', handleCellClick); // Добавляем событие клика
+                board.appendChild(cell); // Добавляем клетку на доску
+            }
+            statusDisplay.textContent = `Начинает игрок "${currentPlayer}"`;
+        }
+        // Добавляем событие на кнопку сброса
+        resetButton.addEventListener('click', resetGame);
+        // Инициализация игры
+        createBoard();
+    </script>
+</body>
+</html>
